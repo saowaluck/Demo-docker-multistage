@@ -1,0 +1,28 @@
+# This is stage 0
+FROM python:3.7.2 AS python_base
+
+ENV APPLICATION_ROOT /app
+RUN mkdir $APPLICATION_ROOT
+WORKDIR $APPLICATION_ROOT
+
+COPY Pipfile $APPLICATION_ROOT/Pipfile
+COPY Pipfile.lock $APPLICATION_ROOT/Pipfile.lock
+RUN pip install pipenv
+RUN pipenv install --dev --system
+
+ADD . $APPLICATION_ROOT
+
+
+# This is stage 1
+FROM python:3.7.2
+
+ENV APPLICATION_ROOT /app
+RUN mkdir $APPLICATION_ROOT
+WORKDIR $APPLICATION_ROOT
+COPY --from=python_base $APPLICATION_ROOT /app
+COPY Pipfile $APPLICATION_ROOT/Pipfile
+COPY Pipfile.lock $APPLICATION_ROOT/Pipfile.lock
+RUN pip install pipenv
+RUN pipenv install --system --ignore-pipfile
+
+ADD . $APPLICATION_ROOT
